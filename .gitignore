@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environment (Windows)
+venv/
+ENV/
+env/
+.venv/
+Scripts/
+Lib/
+Include/
+
+# IDE (Windows)
+.vscode/
+.idea/
+*.swp
+*.swo
+.vs/
+
+# Data files (IMPORTANT - Don't push large datasets!)
+data/raw/*.csv
+data/raw/*.xlsx
+data/processed/*
+data/external/*
+
+# Keep .gitkeep files
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/external/.gitkeep
+
+# Model files (Optional - see note below)
+models/*.pkl
+models/*.h5
+models/*.joblib
+
+# Logs
+*.log
+logs/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Environment variables
+.env
+.env.local
+
+# OS (Windows)
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Build
+build/
+dist/
+*.egg-info/

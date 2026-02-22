@@ -6,6 +6,7 @@ from pathlib import Path
 import logging
 import argparse
 
+# Add src to path
 sys.path.append(str(Path(__file__).parent))
 
 from src.data_loader import load_and_validate_data
@@ -22,33 +23,57 @@ logger = logging.getLogger(__name__)
 
 
 def main(tune_hyperparameters=True, create_plots=False):
-    """Run the complete ML pipeline"""
+    """
+    Run the complete ML pipeline
+    
+    Args:
+        tune_hyperparameters: Whether to perform hyperparameter tuning
+        create_plots: Whether to create evaluation plots
+    """
     try:
-        logger.info("="*50)
+        logger.info("=" * 50)
         logger.info("BREAST CANCER DETECTION MODEL TRAINING PIPELINE")
-        logger.info("="*50)
+        logger.info("=" * 50)
         
-        # Load data
+        # Step 1: Load and validate data
         logger.info("\n[STEP 1] Loading and validating data...")
         df = load_and_validate_data()
+        logger.info(f"Dataset shape: {df.shape}")
         
-        # Preprocess
+        # Step 2: Preprocess data
         logger.info("\n[STEP 2] Preprocessing data...")
         X_train_scaled, X_test_scaled, y_train, y_test, preprocessor = preprocess_pipeline(df)
+        
+        # Save scaler
         preprocessor.save_scaler()
         
-        # Train
+        # Step 3: Train models
         logger.info("\n[STEP 3] Training models...")
         trainer = train_pipeline(X_train_scaled, y_train, tune_hyperparameters)
         
-        # Evaluate
-        logger.info("\n[STEP 4] Evaluating model...")
-        metrics = evaluate_model(trainer.best_model, X_test_scaled, y_test, create_plots)
+        logger.info(f"\nBest model: {trainer.best_model_name}")
+        logger.info(f"Best CV score: {trainer.best_score:.4f}")
         
-        logger.info("\n" + "="*50)
+        # Step 4: Evaluate model
+        logger.info("\n[STEP 4] Evaluating model on test set...")
+        metrics = evaluate_model(
+            trainer.best_model, 
+            X_test_scaled, 
+            y_test,
+            create_plots=create_plots
+        )
+        
+        # Step 5: Summary
+        logger.info("\n" + "=" * 50)
         logger.info("PIPELINE COMPLETED SUCCESSFULLY")
-        logger.info(f"Final Accuracy: {metrics['accuracy']:.4f}")
-        logger.info("="*50)
+        logger.info("=" * 50)
+        logger.info(f"Model saved to: {config.MODEL_PATH}")
+        logger.info(f"Scaler saved to: {config.SCALER_PATH}")
+        logger.info("\nFinal Test Metrics:")
+        logger.info(f"  Accuracy:  {metrics['accuracy']:.4f}")
+        logger.info(f"  F1 Score:  {metrics['f1_score']:.4f}")
+        logger.info(f"  ROC-AUC:   {metrics['roc_auc']:.4f}")
+        logger.info("=" * 50)
         
         return metrics
         
@@ -58,9 +83,21 @@ def main(tune_hyperparameters=True, create_plots=False):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--no-tuning', action='store_true')
-    parser.add_argument('--plots', action='store_true')
+    parser = argparse.ArgumentParser(description='Train breast cancer detection model')
+    parser.add_argument(
+        '--no-tuning', 
+        action='store_true',
+        help='Skip hyperparameter tuning (faster training)'
+    )
+    parser.add_argument(
+        '--plots', 
+        action='store_true',
+        help='Create evaluation plots'
+    )
+    
     args = parser.parse_args()
     
-    main(not args.no_tuning, args.plots)
+    main(
+        tune_hyperparameters=not args.no_tuning,
+        create_plots=args.plots
+    )
